@@ -10,7 +10,7 @@ class Hasil extends StatelessWidget {
         title: const Text('Hasil'),
       ),
       body: const Center(
-        child: Text("This is Hasil "),
+        child: Text("This is hasil"),
       ),
     );
   }
