@@ -4,8 +4,9 @@ import 'package:project_uts_flutter/screen/hasil.dart';
 
 class Game extends StatefulWidget {
   final int level;
+  final int score;
 
-  const Game({super.key, required this.level});
+  const Game({super.key, required this.level, this.score = 0});
 
   @override
   State<Game> createState() => _GameScreenState();
@@ -19,19 +20,19 @@ class _GameScreenState extends State<Game> {
   Timer? timer;
   int timeRemaining = 0;
   List<String> images = [
-    'assets/apel.jpg', 'assets/nanas.jpg', 'assets/pisang.jpg', 'assets/semangka.jpg', 'assets/kiwi.jpg', 'assets/pepaya.jpg'
+    'assets/apel.jpg', 'assets/nanas.jpg', 'assets/pisang.jpg',
+    'assets/semangka.jpg', 'assets/kiwi.jpg', 'assets/pepaya.jpg'
   ];
   List<String> gridImages = [];
   List<bool> revealed = [];
   int? firstIndex;
   bool levelCompleted = false;
-  bool isProcessing = false; //Untuk mengunci inputan user ketika 2 kartu sebelumnya sudah dibuka
-
-  double tileSize = 70; // Ukuran tile grid
+  bool isProcessing = false;
 
   @override
   void initState() {
     super.initState();
+    score = widget.score;
     _setupGame();
     _startTimer();
   }
@@ -40,24 +41,13 @@ class _GameScreenState extends State<Game> {
     setState(() {
       switch (widget.level) {
         case 1:
-          rows = 2;
-          cols = 2;
-          timeLimit = 20;
-          break;
+          rows = 2; cols = 2; timeLimit = 20; break;
         case 2:
-          rows = 2;
-          cols = 4;
-          timeLimit = 40;
-          break;
+          rows = 2; cols = 4; timeLimit = 40; break;
         case 3:
-          rows = 3;
-          cols = 4;
-          timeLimit = 60;
-          break;
+          rows = 3; cols = 4; timeLimit = 60; break;
         default:
-          rows = 2;
-          cols = 2;
-          timeLimit = 20;
+          rows = 2; cols = 2; timeLimit = 20;
       }
 
       timeRemaining = timeLimit;
@@ -91,7 +81,7 @@ class _GameScreenState extends State<Game> {
   }
 
   void _onTileTapped(int index) {
-    if (revealed[index] || isProcessing || levelCompleted) return; 
+    if (revealed[index] || isProcessing || levelCompleted) return;
 
     setState(() {
       revealed[index] = true;
@@ -100,12 +90,12 @@ class _GameScreenState extends State<Game> {
     if (firstIndex == null) {
       firstIndex = index;
     } else {
-      isProcessing = true; 
+      isProcessing = true;
 
       if (gridImages[firstIndex!] == gridImages[index]) {
         score += 10;
         firstIndex = null;
-        isProcessing = false; 
+        isProcessing = false;
         _checkWin();
       } else {
         Future.delayed(const Duration(seconds: 1), () {
@@ -113,7 +103,7 @@ class _GameScreenState extends State<Game> {
             revealed[firstIndex!] = false;
             revealed[index] = false;
             firstIndex = null;
-            isProcessing = false; 
+            isProcessing = false;
           });
         });
       }
@@ -134,7 +124,7 @@ class _GameScreenState extends State<Game> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => Game(level: widget.level + 1),
+          builder: (context) => Game(level: widget.level + 1, score: score),
         ),
       );
     } else {
@@ -157,62 +147,136 @@ class _GameScreenState extends State<Game> {
 
   @override
   Widget build(BuildContext context) {
-    double gridWidth = cols * (tileSize + 80);
-    double gridHeight = rows * (tileSize + 80);
-
     return Scaffold(
-      appBar: AppBar(title: Text('Level ${widget.level} - Time: $timeRemaining')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: gridWidth,
-              height: gridHeight,
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 6,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
-              child: GridView.builder(
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: cols,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                  childAspectRatio: 1,
-                ),
-                itemCount: rows * cols,
-                itemBuilder: (context, index) {
-                  return GestureDetector(
-                    onTap: () => _onTileTapped(index),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.blueAccent,
-                        borderRadius: BorderRadius.circular(8),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        color: const Color(0xFF88CEEF),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Header
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Text(
+                      'Level ${widget.level}',
+                      style: const TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
-                      child: revealed[index]
-                          ? Image.asset(gridImages[index], fit: BoxFit.cover)
-                          : const Icon(Icons.question_mark, size: 40, color: Colors.white),
                     ),
-                  );
-                },
+                    Text(
+                      'Time Remaining: $timeRemaining s',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
-            if (levelCompleted)
-              ElevatedButton(
-                onPressed: _nextLevel,
-                child: const Text("Next Level"),
+
+              // Grid dan tombol
+              Expanded(
+                child: Center(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      double maxGridWidth = constraints.maxWidth > 500 ? 500 : constraints.maxWidth * 0.9;
+                      double maxGridHeight = constraints.maxHeight > 600 ? 600 : constraints.maxHeight * 0.7;
+
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            constraints: BoxConstraints(
+                              maxWidth: maxGridWidth,
+                              maxHeight: maxGridHeight,
+                            ),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.9),
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.black26,
+                                  blurRadius: 10,
+                                  spreadRadius: 2,
+                                ),
+                              ],
+                            ),
+                            child: GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: rows * cols,
+                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: cols,
+                                crossAxisSpacing: 8,
+                                mainAxisSpacing: 8,
+                                childAspectRatio: 1,
+                              ),
+                              itemBuilder: (context, index) {
+                                return GestureDetector(
+                                  onTap: () => _onTileTapped(index),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 300),
+                                    decoration: BoxDecoration(
+                                      color: revealed[index] ? Colors.white : Colors.blueAccent,
+                                      borderRadius: BorderRadius.circular(12),
+                                      boxShadow: [
+                                        if (revealed[index])
+                                          const BoxShadow(
+                                            color: Colors.black12,
+                                            blurRadius: 4,
+                                            spreadRadius: 1,
+                                          )
+                                      ],
+                                    ),
+                                    child: Center(
+                                      child: revealed[index]
+                                          ? ClipRRect(
+                                              borderRadius: BorderRadius.circular(8),
+                                              child: Image.asset(
+                                                gridImages[index],
+                                                fit: BoxFit.cover,
+                                              ),
+                                            )
+                                          : const Icon(Icons.question_mark, size: 50, color: Colors.white),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+
+                          if (levelCompleted)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 16.0),
+                              child: ElevatedButton(
+                                onPressed: _nextLevel,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.deepPurple,
+                                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: const Text(
+                                  "Next Level",
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                                ),
+                              ),
+                            ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
               ),
-          ],
+            ],
+          ),
         ),
       ),
     );

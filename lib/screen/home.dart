@@ -6,19 +6,56 @@ class Home extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Container(
-        alignment: Alignment.center,
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            gameDescription(),
-            const SizedBox(height: 20),
-            buttonPlayGame(context),
-          ],
+    return Scaffold(
+      body: Container(
+        width: double.infinity,
+        height: MediaQuery.of(context).size.height,
+        color: const Color(0xFF88CEEF),
+        child: SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: MediaQuery.of(context).size.height,
+            ),
+            child: IntrinsicHeight(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    header(),
+                    const SizedBox(height: 30),
+                    gameDescription(),
+                    const SizedBox(height: 30),
+                    buttonPlayGame(context),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
       ),
+    );
+  }
+
+  Widget header() {
+    return Column(
+      children: const [
+        Icon(
+          Icons.videogame_asset_rounded,
+          size: 80,
+          color: Colors.white,
+        ),
+        SizedBox(height: 10),
+        Text(
+          "Memory Match Game",
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            letterSpacing: 1.2,
+          ),
+        ),
+      ],
     );
   }
 
@@ -26,20 +63,23 @@ class Home extends StatelessWidget {
     return ElevatedButton(
       onPressed: () {
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => const Game(level: 1)));
+          context,
+          MaterialPageRoute(builder: (context) => const Game(level: 1)),
+        );
       },
       style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        backgroundColor: Colors.blueAccent,
+        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+        backgroundColor: Colors.deepPurple,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(20),
         ),
-        elevation: 5,
+        elevation: 8,
+        shadowColor: Colors.black54,
       ),
       child: const Text(
-        "PLAY",
+        "PLAY NOW",
         style: TextStyle(
-          fontSize: 20,
+          fontSize: 22,
           fontWeight: FontWeight.bold,
           color: Colors.white,
         ),
@@ -49,38 +89,39 @@ class Home extends StatelessWidget {
 
   Widget gameDescription() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.blue.shade100,
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.5),
-            spreadRadius: 3,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
+            color: Colors.black12,
+            blurRadius: 10,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: const [
           Text(
-            "Cara Bermain:",
-            textAlign: TextAlign.center,
+            "📖 Cara Bermain:",
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.blueAccent,
+              color: Colors.deepPurple,
             ),
           ),
-          SizedBox(height: 8),
+          SizedBox(height: 12),
           Text(
-            "1. Pilih 2 kartu \n 2. Cocokkan 2 kartu yang sama \n 3. Jika waktu habis maka game over \n 4. Have fun",
-            textAlign: TextAlign.left,
+            "🃏 Pilih 2 kartu.\n"
+            "✅ Cocokkan 2 kartu yang sama.\n"
+            "⏳ Jika waktu habis, maka Game Over.\n"
+            "🎉 Have Fun & Good Luck!",
             style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.blueAccent,
+              fontSize: 18,
+              color: Colors.black87,
+              height: 1.5,
             ),
           ),
         ],

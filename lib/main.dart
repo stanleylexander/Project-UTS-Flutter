@@ -1,10 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:project_uts_flutter/screen/home.dart';
-import 'package:project_uts_flutter/screen/score.dart';
 import 'package:project_uts_flutter/screen/login.dart';
+import 'package:project_uts_flutter/screen/score.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  checkUser().then((String result) {
+    if (result == '') {
+      runApp(MyLogin());
+    } else {
+      active_user = result;
+      runApp(MyApp());
+    }
+  });
+}
+
+String active_user = "";
+
+Future<String> checkUser() async {
+  final prefs = await SharedPreferences.getInstance();
+  String userId = prefs.getString("user_id") ?? '';
+  return userId;
 }
 
 class MyApp extends StatelessWidget {
@@ -16,7 +33,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       routes: {
         'score': (context) => const Score(),
-        'login': (context) => const Login()
       },
       title: 'Flutter Project UTS',
       theme: ThemeData(
@@ -61,10 +77,21 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _currentIndex = 0;
+  final int _currentIndex = 0;
 
   final List<Widget> _screens = [Home()];
   final List<String> _title = ['Home'];
+
+  void doLogout() async{
+    final prefs = await SharedPreferences.getInstance();
+    prefs.remove("user_id");
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => MyLogin()),
+      (Route<dynamic> route) => false,
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +112,13 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(_title[_currentIndex]),
       ),
 
-      body: _screens[_currentIndex],
+      body: Container(
+        height: double.infinity,
+        width: double.infinity,
+        child: SafeArea(
+          child: _screens[_currentIndex],
+        ),
+      ),
 
       drawer: myDrawer(),
 
@@ -97,11 +130,11 @@ class _MyHomePageState extends State<MyHomePage> {
       elevation: 16.0,
       child: Column(
         children: <Widget>[
-           const UserAccountsDrawerHeader(
-              accountName: Text("User"),
-              currentAccountPicture: CircleAvatar( 
-                  backgroundImage:
-                      NetworkImage("https://i.pravatar.cc/150")), accountEmail: null,),
+          UserAccountsDrawerHeader(
+            accountName: Text(active_user),
+            currentAccountPicture: CircleAvatar( 
+              backgroundImage:
+                NetworkImage("https://i.pravatar.cc/150")), accountEmail: null,),
           ListTile(
             title:  const Text("High Score"),
             leading:  const Icon(Icons.scoreboard),
@@ -113,7 +146,7 @@ class _MyHomePageState extends State<MyHomePage> {
             title:  const Text("Log Out"),
             leading:  const Icon(Icons.logout),
             onTap: () {
-              Navigator.pushNamed(context, "login");
+              doLogout();
             }
           ),
         ],
